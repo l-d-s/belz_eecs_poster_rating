@@ -216,7 +216,8 @@ p_best <- ggplot(plot_df, aes(x = prob_best, y = poster_label)) +
   scale_x_continuous(
     limits = c(0, 1),
     breaks = seq(0, 1, 0.2),
-    labels = scales::percent_format(accuracy = 1)
+    labels = scales::percent_format(accuracy = 1),
+    expand = expansion(c(0, NA))
   ) +
   labs(
     title = "B. Probability of best poster",
@@ -273,11 +274,17 @@ p_bivariate <- ggplot(plot_df) +
     aes(x = raw_mean_science, y = raw_mean_presentation, color = "Observed mean"),
     shape = 18, size = 3.5
   ) +
-  geom_label(
+  geom_text(
+    data = filter(plot_df, show_id),
+    aes(x = raw_mean_science, y = raw_mean_presentation,
+        label = sub("^P", "", poster_code)),
+    color = "white", fontface = "bold", size = 4.5, show.legend = FALSE
+  ) +
+  geom_text(
     data = filter(plot_df, show_id),
     aes(x = raw_mean_science, y = raw_mean_presentation,
         label = sub("^P", "", poster_code), color = "Observed mean"),
-    fill = "white", linewidth = 0, label.padding = grid::unit(0.1, "lines"), size = 3.5
+    fontface = "bold", size = 3.5
   ) +
   scale_color_manual(
     name = NULL,
