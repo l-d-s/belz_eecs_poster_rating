@@ -89,21 +89,21 @@ print(fit$summary(variables = c("tau", "rho_judge", "phi")))
 # 3. Summarize posterior expectations and Pr(Poster is Best)
 # -------------------------------------------------------------------------
 obs_summary <- df %>%
-  mutate(obs_sum = science_score + presentation_score) %>%
+  mutate(obs_mean = (science_score + presentation_score) / 2) %>%
   group_by(poster_id) %>%
   summarise(
     n_judges = n(),
-    raw_mean_sum = mean(obs_sum, na.rm = TRUE),
-    raw_se_sum   = sd(obs_sum, na.rm = TRUE) / sqrt(n()),
+    raw_mean_score = mean(obs_mean, na.rm = TRUE),
+    raw_se_score   = sd(obs_mean, na.rm = TRUE) / sqrt(n()),
     .groups = "drop"
   )
 
 post_exp <- fit$summary(
-  variables = "exp_sum",
+  variables = "exp_mean",
   mean, median,
   ~quantile(.x, probs = c(0.05, 0.25, 0.75, 0.95))
 ) %>%
-  mutate(poster_id = as.integer(gsub("exp_sum\\[|\\]", "", variable))) %>%
+  mutate(poster_id = as.integer(gsub("exp_mean\\[|\\]", "", variable))) %>%
   rename(
     adj_mean = mean,
     adj_median = median,
@@ -125,17 +125,17 @@ plot_df <- obs_summary %>%
       sprintf("Poster %02d (n=%d)", poster_id, n_judges),
       levels = sprintf("Poster %02d (n=%d)", poster_id[order(adj_mean)], n_judges[order(adj_mean)])
     ),
-    shift = adj_mean - raw_mean_sum
+    shift = adj_mean - raw_mean_score
   )
 
 # -------------------------------------------------------------------------
 # 4. Classical aesthetic two-panel plot using ggplot2 + cowplot
 # -------------------------------------------------------------------------
-# Panel A: Observed Raw Mean vs. Judge-Adjusted Posterior Sum (2-20 scale)
+# Panel A: Observed Raw Mean vs. Judge-Adjusted Posterior Mean (1-10 scale)
 p_scores <- ggplot(plot_df, aes(y = poster_label)) +
   # Dashed connector showing direction & magnitude of judge-bias adjustment
   geom_segment(
-    aes(x = raw_mean_sum, xend = adj_mean, yend = poster_label),
+    aes(x = raw_mean_score, xend = adj_mean, yend = poster_label),
     color = "grey55", linetype = "dotted", linewidth = 0.6
   ) +
   # 90% Posterior Credible Interval (thin line)
@@ -150,10 +150,10 @@ p_scores <- ggplot(plot_df, aes(y = poster_label)) +
   ) +
   # Raw observed mean (open circle)
   geom_point(
-    aes(x = raw_mean_sum, shape = "Observed raw mean"),
+    aes(x = raw_mean_score, shape = "Observed raw mean"),
     size = 2.6, fill = "white", color = "black", stroke = 0.9
   ) +
-  # Posterior expected sum | judge = 0 (filled circle)
+  # Posterior expected average | judge = 0 (filled circle)
   geom_point(
     aes(x = adj_mean, shape = "Adjusted posterior mean"),
     size = 2.8, fill = "#1B365D", color = "#1B365D"
@@ -163,12 +163,12 @@ p_scores <- ggplot(plot_df, aes(y = poster_label)) +
     values = c("Observed raw mean" = 21, "Adjusted posterior mean" = 16)
   ) +
   scale_x_continuous(
-    limits = c(2, 20),
-    breaks = seq(2, 20, by = 2),
+    limits = c(1, 10),
+    breaks = 1:10,
     expand = expansion(mult = c(0.02, 0.03))
   ) +
   labs(
-    x = "Expected Total Score (Science + Presentation, 2–20 Scale)",
+    x = "Average Score (Science and Presentation, 1–10 Scale)",
     y = NULL,
     title = "A. Judge-Adjusted Posterior Score vs. Raw Mean",
     subtitle = "Thick & thin bars show 50% and 90% credible intervals (given average judge)"
@@ -201,7 +201,7 @@ p_best <- ggplot(plot_df, aes(x = prob_best, y = poster_label)) +
     x = "Pr(Best Poster | Judge = 0)",
     y = NULL,
     title = "B. Posterior Probability of Rank #1",
-    subtitle = "Share of posterior draws with highest sum"
+    subtitle = "Share of posterior draws with highest average"
   ) +
   theme_classic(base_size = 11, base_family = "serif") +
   theme(

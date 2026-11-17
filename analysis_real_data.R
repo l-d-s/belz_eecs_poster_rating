@@ -98,24 +98,24 @@ print(fit$summary(variables = c("tau", "rho_judge", "phi")))
 # 3. Summarize posterior expectations and Pr(Poster is Best)
 # -------------------------------------------------------------------------
 obs_summary <- eval_df %>%
-  mutate(obs_sum = science_score + presentation_score) %>%
+  mutate(obs_mean = (science_score + presentation_score) / 2) %>%
   group_by(poster_id) %>%
   summarise(
     n_judges = n(),
     raw_mean_science = mean(science_score, na.rm = TRUE),
     raw_mean_presentation = mean(presentation_score, na.rm = TRUE),
-    raw_mean_sum = mean(obs_sum, na.rm = TRUE),
-    raw_se_sum   = sd(obs_sum, na.rm = TRUE) / sqrt(n()),
+    raw_mean_score = mean(obs_mean, na.rm = TRUE),
+    raw_se_score   = sd(obs_mean, na.rm = TRUE) / sqrt(n()),
     .groups = "drop"
   )
 
 post_exp <- fit$summary(
-  variables = "exp_sum",
+  variables = "exp_mean",
   mean, median,
-  # Equal-tailed intervals from posterior draws of the expected total at judge effect 0.
+  # Equal-tailed intervals from posterior draws of the expected average at judge effect 0.
   ~quantile(.x, probs = c(0.05, 0.25, 0.75, 0.95))
 ) %>%
-  mutate(poster_id = as.integer(gsub("exp_sum\\[|\\]", "", variable))) %>%
+  mutate(poster_id = as.integer(gsub("exp_mean\\[|\\]", "", variable))) %>%
   rename(
     adj_mean = mean,
     adj_median = median,
@@ -143,17 +143,17 @@ plot_df <- obs_summary %>%
   left_join(poster_info, by = "poster_id") %>%
   arrange(desc(adj_mean)) %>%
   mutate(
-    poster_label = sprintf("%s    %.1f (n=%d)", poster_code, raw_mean_sum, n_judges),
+    poster_label = sprintf("%s    %.1f (n=%d)", poster_code, raw_mean_score, n_judges),
     poster_label = factor(poster_label, levels = rev(poster_label))
   )
 
 # -------------------------------------------------------------------------
 # 4. Classical aesthetic two-panel plot using ggplot2 + cowplot
 # -------------------------------------------------------------------------
-# Panel A: Observed Raw Mean vs. Judge-Adjusted Posterior Sum (2-20 scale)
+# Panel A: Observed Raw Mean vs. Judge-Adjusted Posterior Mean (1-10 scale)
 p_scores <- ggplot(plot_df, aes(y = poster_label)) +
   geom_segment(
-    aes(x = raw_mean_sum, xend = adj_mean, yend = poster_label),
+    aes(x = raw_mean_score, xend = adj_mean, yend = poster_label),
     color = "grey65", linetype = "dotted", linewidth = 0.6
   ) +
   geom_segment(
@@ -168,26 +168,26 @@ p_scores <- ggplot(plot_df, aes(y = poster_label)) +
     aes(x = adj_mean, color = "Adjusted posterior mean", shape = "Adjusted posterior mean"),
     size = 2.8
   ) +
-  geom_point(aes(x = raw_mean_sum), color = "white", shape = 18, size = 6) +
+  geom_point(aes(x = raw_mean_score), color = "white", shape = 18, size = 6) +
   geom_point(
-    aes(x = raw_mean_sum, color = "Observed mean sum", shape = "Observed mean sum"),
+    aes(x = raw_mean_score, color = "Observed average", shape = "Observed average"),
     size = 4
   ) +
   scale_color_manual(
     name = NULL,
-    values = c("Observed mean sum" = "#B24A00", "Adjusted posterior mean" = "#1B365D"),
-    breaks = c("Observed mean sum", "Adjusted posterior mean")
+    values = c("Observed average" = "#B24A00", "Adjusted posterior mean" = "#1B365D"),
+    breaks = c("Observed average", "Adjusted posterior mean")
   ) +
   scale_shape_manual(
     name = NULL,
-    values = c("Observed mean sum" = 18, "Adjusted posterior mean" = 16),
-    breaks = c("Observed mean sum", "Adjusted posterior mean")
+    values = c("Observed average" = 18, "Adjusted posterior mean" = 16),
+    breaks = c("Observed average", "Adjusted posterior mean")
   ) +
-  scale_x_continuous(limits = c(2, 20), breaks = seq(2, 20, by = 2)) +
+  scale_x_continuous(limits = c(1, 10), breaks = 1:10) +
   labs(
     title = "A. Observed and adjusted scores",
     subtitle = "Posterior draw percentiles (judge effect = 0):\n50% thick: 25th–75th; 90% thin: 5th–95th",
-    x = "Science + presentation score (2–20)",
+    x = "Average science and presentation score (1–10)",
     y = "Poster    observed mean (n)"
   ) +
   theme_cowplot(font_size = 11) +
@@ -208,7 +208,7 @@ p_best <- ggplot(plot_df, aes(x = prob_best, y = poster_label)) +
   ) +
   labs(
     title = "B. Probability of best poster",
-    subtitle = "Share of posterior draws with the highest\nexpected total; judge effect = 0",
+    subtitle = "Share of posterior draws with the highest\nexpected average; judge effect = 0",
     x = "Pr(best poster)",
     y = NULL
   ) +
@@ -293,7 +293,7 @@ cat("Plot saved to:", file.path(output_dir, "poster_ratings_bivariate.pdf"), "\n
 summary_table <- plot_df %>%
   select(
     poster_id, poster_code, poster_title, author, 
-    n_judges, raw_mean_sum, adj_mean, prob_best
+    n_judges, raw_mean_score, adj_mean, prob_best
   ) %>%
   rename(
     "Poster" = poster_id,
@@ -301,7 +301,7 @@ summary_table <- plot_df %>%
     "Title" = poster_title,
     "Author" = author,
     "N Judges" = n_judges,
-    "Raw Mean" = raw_mean_sum,
+    "Raw Mean" = raw_mean_score,
     "Adjusted Mean" = adj_mean,
     "Pr(Best)" = prob_best
   )

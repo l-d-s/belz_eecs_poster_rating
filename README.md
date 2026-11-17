@@ -81,18 +81,20 @@ e_{pd}
 F_{\operatorname{Beta}(\theta_{pd}\phi_d,\,(1-\theta_{pd})\phi_d)}
 \!\left(\frac{k}{10}\right),
 \qquad
-s_p=e_{p1}+e_{p2}.
+m_p=\frac{e_{p1}+e_{p2}}{2}.
 $$
 
-The scripts summarize $s_p$ across posterior draws. The 50% and 90%
+The scripts summarize $m_p$ across posterior draws, on the 1–10 scale.
+Observed averages similarly take the mean of science and presentation
+scores for each evaluation before averaging over judges. The 50% and 90%
 equal-tailed intervals use the 25th–75th and 5th–95th percentiles,
-respectively. These are intervals for the expected total at zero judge
+respectively. These are intervals for the expected average at zero judge
 effect, not prediction intervals for a future observed score.
 
 The best-poster indicator in each draw is
 
 $$
-I_p=\mathbf{1}\!\left\{s_p\geq \max_q s_q-10^{-12}\right\}.
+I_p=\mathbf{1}\!\left\{m_p\geq \max_q m_q-5\cdot10^{-13}\right\}.
 $$
 
 Its posterior mean estimates the probability of being best under that

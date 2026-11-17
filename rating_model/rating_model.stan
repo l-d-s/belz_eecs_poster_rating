@@ -83,20 +83,20 @@ generated quantities {
 
   vector[P] exp_science;
   vector[P] exp_presentation;
-  vector[P] exp_sum;
+  vector[P] exp_mean;
   array[P] int<lower=0, upper=1> is_best;
 
-  real max_sum = negative_infinity();
+  real max_mean = negative_infinity();
   for (p in 1:P) {
     exp_science[p] = expected_discrete_beta(theta[p, 1], phi[1]);
     exp_presentation[p] = expected_discrete_beta(theta[p, 2], phi[2]);
-    exp_sum[p] = exp_science[p] + exp_presentation[p];
-    if (exp_sum[p] > max_sum) {
-      max_sum = exp_sum[p];
+    exp_mean[p] = (exp_science[p] + exp_presentation[p]) / 2;
+    if (exp_mean[p] > max_mean) {
+      max_mean = exp_mean[p];
     }
   }
 
   for (p in 1:P) {
-    is_best[p] = (exp_sum[p] >= max_sum - 1e-12) ? 1 : 0;
+    is_best[p] = (exp_mean[p] >= max_mean - 5e-13) ? 1 : 0;
   }
 }
