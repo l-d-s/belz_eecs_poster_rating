@@ -8,7 +8,7 @@ accounting for differences between judges. The Stan implementation is in
 
 Let $p=1,\ldots,P$ index posters, $j=1,\ldots,J$ judges, and
 $d\in\{1,2\}$ the science and presentation domains. Evaluation $i$
-has poster $p_i$, judge $j_i$, and score $y_{id}\in\{1,\ldots,10\}$.
+has poster $p[i]$, judge $j[i]$, and score $y_{id}\in\{1,\ldots,10\}$.
 
 ### Poster quality and judge effects
 
@@ -16,8 +16,8 @@ For each poster and domain, the latent quality for a judge with zero
 effect is $\theta_{pd}$:
 
 $$
-\theta_{pd} \sim \operatorname{Uniform}(0,1), \qquad
-\eta_{pd} = \operatorname{logit}(\theta_{pd}).
+\theta_{pd} \sim \mathrm{Uniform}(0,1), \qquad
+\eta_{pd} = \mathrm{logit}(\theta_{pd}).
 $$
 
 Judge effects are correlated across the two domains. The model uses a
@@ -26,10 +26,10 @@ non-centered parameterization:
 $$
 \begin{aligned}
 z_j &\sim \mathcal{N}_2(\mathbf{0}, I), \\
-b_j &= \operatorname{diag}(\tau_1,\tau_2)\,L_\Omega z_j, \\
+b_j &= \mathrm{diag}(\tau_1,\tau_2)\,L_\Omega z_j, \\
 \Omega &= L_\Omega L_\Omega^\mathsf{T}, \\
-\tau_d &\sim \operatorname{HalfNormal}(0,1), \\
-\Omega &\sim \operatorname{LKJ}(2).
+\tau_d &\sim \mathrm{HalfNormal}(0,1), \\
+\Omega &\sim \mathrm{LKJ}(2).
 \end{aligned}
 $$
 
@@ -43,11 +43,11 @@ The mean and precision of the latent continuous score are:
 
 $$
 \begin{aligned}
-\mu_{id} &= \operatorname{logit}^{-1}(\eta_{p_i d}+b_{j_i d}), \\
-\phi_d &\sim \operatorname{Gamma}(2,0.1), \\
+\mu_{id} &= \mathrm{logit}^{-1}(\eta_{p[i] d}+b_{j[i] d}), \\
+\phi_d &\sim \mathrm{Gamma}(2,0.1), \\
 \alpha_{id} &= \mu_{id}\phi_d, \\
 \beta_{id} &= (1-\mu_{id})\phi_d, \\
-u_{id} &\sim \operatorname{Beta}(\alpha_{id},\beta_{id}).
+u_{id} &\sim \mathrm{Beta}(\alpha_{id},\beta_{id}).
 \end{aligned}
 $$
 
@@ -58,8 +58,8 @@ of the corresponding Beta distribution, then for $k=1,\ldots,10$:
 
 $$
 \Pr(y_{id}=k\mid\mu_{id},\phi_d)
-= F_{id}\!\left(\frac{k}{10}\right)
-  - F_{id}\!\left(\frac{k-1}{10}\right).
+= F_{id}\left(\frac{k}{10}\right)
+- F_{id}\left(\frac{k-1}{10}\right).
 $$
 
 The implementation uses $F_{id}(0)=0$ and $F_{id}(1)=1$, and floors
@@ -78,8 +78,8 @@ judge with zero effect is
 $$
 e_{pd}
 = 10-\sum_{k=1}^{9}
-F_{\operatorname{Beta}(\theta_{pd}\phi_d,\,(1-\theta_{pd})\phi_d)}
-\!\left(\frac{k}{10}\right),
+F_{\mathrm{Beta}(\theta_{pd}\phi_d,\,(1-\theta_{pd})\phi_d)}
+\left(\frac{k}{10}\right),
 \qquad
 m_p=\frac{e_{p1}+e_{p2}}{2}.
 $$
@@ -94,7 +94,7 @@ effect, not prediction intervals for a future observed score.
 The best-poster indicator in each draw is
 
 $$
-I_p=\mathbf{1}\!\left\{m_p\geq \max_q m_q-5\cdot10^{-13}\right\}.
+I_p=\mathbf{1}\left[m_p\geq \max_q m_q-5\cdot10^{-13}\right].
 $$
 
 Its posterior mean estimates the probability of being best under that
