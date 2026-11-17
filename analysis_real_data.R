@@ -332,6 +332,6 @@ summary_table <- plot_df %>%
   )
 
 cat("\n========== Poster Ratings Summary Table ==========\n")
-print(summary_table, n = P)
+print(summary_table, n = 5)
 
 cat("\nAnalysis complete!\n")
