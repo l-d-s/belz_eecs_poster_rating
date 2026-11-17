@@ -1,0 +1,22 @@
+# Local environment and data
+/.direnv/
+/input_data/
+/result
+/result-*
+
+# R session state
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Compiled Stan model and generated plot
+/rating_model
+/rating_model.exe
+/rating_model.hpp
+/rating_model.o
+/rating_model.d
+
+# plot outputs
+/poster_ratings_analysis.pdf
+/poster_ratings_bivariate.pdf
