@@ -58,8 +58,7 @@ of the corresponding Beta distribution, then for $k=1,\ldots,10$:
 
 $$
 \Pr(y_{id}=k\mid\mu_{id},\phi_d)
-= F_{id}\left(\frac{k}{10}\right)
-- F_{id}\left(\frac{k-1}{10}\right).
+= F_{id}\left(\frac{k}{10}\right) - F_{id}\left(\frac{k-1}{10}\right).
 $$
 
 The implementation uses $F_{id}(0)=0$ and $F_{id}(1)=1$, and floors
