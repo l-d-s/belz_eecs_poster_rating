@@ -136,6 +136,29 @@ post_domains <- fit$summary(variables = c("exp_science", "exp_presentation"), me
   pivot_wider(names_from = domain, values_from = mean) %>%
   rename(adj_mean_science = exp_science, adj_mean_presentation = exp_presentation)
 
+domain_draws <- as_draws_matrix(fit$draws(variables = c("exp_science", "exp_presentation")))
+domain_best <- function(domain) {
+  columns <- grep(paste0("^exp_", domain, "\\["), colnames(domain_draws))
+  if (length(columns) != P) {
+    stop("Expected one posterior score per poster for ", domain)
+  }
+  scores <- domain_draws[, columns, drop = FALSE]
+  best_in_draw <- sweep(scores, 1, apply(scores, 1, max) - 5e-13, FUN = ">=")
+  tibble(
+    poster_id = as.integer(sub("^.*\\[([0-9]+)\\]$", "\\1", colnames(scores))),
+    domain = domain,
+    prob_best_domain = colMeans(best_in_draw)
+  )
+}
+
+labelled_posters <- bind_rows(domain_best("science"), domain_best("presentation")) %>%
+  group_by(domain) %>%
+  arrange(desc(prob_best_domain), poster_id, .by_group = TRUE) %>%
+  slice_head(n = 5) %>%
+  ungroup() %>%
+  pull(poster_id) %>%
+  unique()
+
 plot_df <- obs_summary %>%
   left_join(post_exp, by = "poster_id") %>%
   left_join(post_best, by = "poster_id") %>%
@@ -143,9 +166,15 @@ plot_df <- obs_summary %>%
   left_join(poster_info, by = "poster_id") %>%
   arrange(desc(adj_mean)) %>%
   mutate(
-    poster_label = sprintf("%s    %.1f (n=%d)", poster_code, raw_mean_score, n_judges),
-    poster_label = factor(poster_label, levels = rev(poster_label))
+    show_id = poster_id %in% labelled_posters,
+    poster_label = factor(poster_code, levels = rev(poster_code))
   )
+
+poster_axis_labels <- setNames(
+  sprintf("%s    %.1f (n=%d)", ifelse(plot_df$show_id, plot_df$poster_code, "—"),
+          plot_df$raw_mean_score, plot_df$n_judges),
+  plot_df$poster_code
+)
 
 # -------------------------------------------------------------------------
 # 4. Classical aesthetic two-panel plot using ggplot2 + cowplot
@@ -183,6 +212,7 @@ p_scores <- ggplot(plot_df, aes(y = poster_label)) +
     values = c("Observed average" = 18, "Adjusted posterior mean" = 16),
     breaks = c("Observed average", "Adjusted posterior mean")
   ) +
+  scale_y_discrete(labels = poster_axis_labels) +
   scale_x_continuous(limits = c(1, 10), breaks = 1:10) +
   labs(
     title = "A. Observed and adjusted scores",
@@ -256,7 +286,13 @@ p_bivariate <- ggplot(plot_df) +
         color = "Adjusted posterior mean"),
     size = 2.8
   ) +
+  geom_point(
+    data = filter(plot_df, !show_id),
+    aes(x = raw_mean_science, y = raw_mean_presentation, color = "Observed mean"),
+    shape = 18, size = 3.5
+  ) +
   geom_label(
+    data = filter(plot_df, show_id),
     aes(x = raw_mean_science, y = raw_mean_presentation,
         label = sub("^P", "", poster_code), color = "Observed mean"),
     fill = "white", linewidth = 0, label.padding = grid::unit(0.1, "lines"), size = 3.5
@@ -274,7 +310,7 @@ p_bivariate <- ggplot(plot_df) +
     subtitle = "Arrows: observed means to posterior expectations at judge effect = 0",
     x = "Science score",
     y = "Presentation score",
-    caption = "Diagonal lines show (science + presentation) / 2.\nLabels identify observed scores by poster number."
+    caption = "Diagonal lines show (science + presentation) / 2.\nLabels show the top five by Pr(best) in either domain."
   ) +
   theme_cowplot(font_size = 11) +
   theme(

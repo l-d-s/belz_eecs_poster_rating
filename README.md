@@ -101,6 +101,15 @@ Its posterior mean estimates the probability of being best under that
 definition. Ties within the tolerance can give multiple posters an
 indicator of one in the same draw.
 
+The real-data plots label only the union of the top five posters by
+posterior probability of being best in science and the top five in
+presentation. Each domain's probability is calculated across draws from
+its expected scores at zero judge effect, using a $5\cdot10^{-13}$ tie
+tolerance. Ties in the estimated probabilities are broken by the internal
+poster index, so at most five posters are selected per domain. Other
+posters remain visible without ID labels; the summary table retains all
+poster metadata.
+
 ## Running the analyses
 
 Run the scripts from the repository root in an R environment with CmdStanR,
