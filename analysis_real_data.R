@@ -168,6 +168,7 @@ p_scores <- ggplot(plot_df, aes(y = poster_label)) +
     aes(x = adj_mean, color = "Adjusted posterior mean", shape = "Adjusted posterior mean"),
     size = 2.8
   ) +
+  geom_point(aes(x = raw_mean_sum), color = "white", shape = 18, size = 6) +
   geom_point(
     aes(x = raw_mean_sum, color = "Observed mean sum", shape = "Observed mean sum"),
     size = 4
@@ -236,22 +237,13 @@ ggsave(file.path(output_dir, "poster_ratings_analysis.pdf"), final_plot, width =
 cat("\nPlot saved to:", file.path(output_dir, "poster_ratings_analysis.pdf"), "\n")
 
 # Bivariate observed means and posterior expectations on the 1-10 score scale
-mean_score_lines <- data.frame(mean_score = c(2, 4, 6, 8)) %>%
-  mutate(
-    label_x = pmax(1.15, 2 * mean_score - 9.6),
-    label_y = 2 * mean_score - label_x
-  )
+mean_score_lines <- data.frame(mean_score = c(2, 4, 6, 8))
 
 p_bivariate <- ggplot(plot_df) +
   geom_abline(
     data = mean_score_lines,
     aes(slope = -1, intercept = 2 * mean_score),
     color = "grey80", linewidth = 0.4, linetype = "dashed"
-  ) +
-  geom_text(
-    data = mean_score_lines,
-    aes(x = label_x, y = label_y, label = paste("Mean", mean_score)),
-    color = "grey40", size = 3, hjust = 0, vjust = -0.3
   ) +
   geom_segment(
     aes(x = raw_mean_science, y = raw_mean_presentation,
@@ -260,27 +252,18 @@ p_bivariate <- ggplot(plot_df) +
     arrow = grid::arrow(length = grid::unit(0.1, "inches"), type = "closed")
   ) +
   geom_point(
-    aes(x = raw_mean_science, y = raw_mean_presentation,
-        color = "Observed mean", shape = "Observed mean"),
-    size = 4
-  ) +
-  geom_point(
     aes(x = adj_mean_science, y = adj_mean_presentation,
-        color = "Adjusted posterior mean", shape = "Adjusted posterior mean"),
+        color = "Adjusted posterior mean"),
     size = 2.8
   ) +
-  geom_text(
-    aes(x = adj_mean_science, y = adj_mean_presentation, label = poster_code),
-    nudge_y = 0.25, size = 3, check_overlap = TRUE
+  geom_label(
+    aes(x = raw_mean_science, y = raw_mean_presentation,
+        label = sub("^P", "", poster_code), color = "Observed mean"),
+    fill = "white", linewidth = 0, label.padding = grid::unit(0.1, "lines"), size = 3.5
   ) +
   scale_color_manual(
     name = NULL,
     values = c("Observed mean" = "#B24A00", "Adjusted posterior mean" = "#1B365D"),
-    breaks = c("Observed mean", "Adjusted posterior mean")
-  ) +
-  scale_shape_manual(
-    name = NULL,
-    values = c("Observed mean" = 18, "Adjusted posterior mean" = 16),
     breaks = c("Observed mean", "Adjusted posterior mean")
   ) +
   scale_x_continuous(breaks = 1:10) +
@@ -291,7 +274,7 @@ p_bivariate <- ggplot(plot_df) +
     subtitle = "Arrows: observed means to posterior expectations at judge effect = 0",
     x = "Science score",
     y = "Presentation score",
-    caption = "Diagonal lines show (science + presentation) / 2.\nPoster labels identify adjusted points; overlapping labels may be omitted."
+    caption = "Diagonal lines show (science + presentation) / 2.\nLabels identify observed scores by poster number."
   ) +
   theme_cowplot(font_size = 11) +
   theme(
