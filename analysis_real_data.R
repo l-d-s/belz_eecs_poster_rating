@@ -60,7 +60,7 @@ poster_info <- raw_data %>%
 # 2. Compile and fit the Stan model
 # -------------------------------------------------------------------------
 cat("Compiling Stan model...\n")
-mod <- cmdstan_model("rating_model.stan")
+mod <- cmdstan_model("rating_model/rating_model.stan")
 
 stan_data <- list(
   N = nrow(eval_df),
@@ -73,8 +73,14 @@ stan_data <- list(
 )
 
 cat("Fitting model with", stan_data$N, "observations...\n")
+output_dir <- "outputs"
+if (!dir.exists(output_dir) && !dir.create(output_dir, recursive = TRUE)) {
+  stop("Could not create output directory: ", output_dir)
+}
+
 fit <- mod$sample(
   data = stan_data,
+  output_dir = output_dir,
   seed = 2026,
   chains = 4,
   parallel_chains = 4,
@@ -226,8 +232,8 @@ final_plot <- plot_grid(
 print(final_plot)
 
 # Save the plot
-ggsave("poster_ratings_analysis.pdf", final_plot, width = 14, height = 6)
-cat("\nPlot saved to: poster_ratings_analysis.pdf\n")
+ggsave(file.path(output_dir, "poster_ratings_analysis.pdf"), final_plot, width = 14, height = 6)
+cat("\nPlot saved to:", file.path(output_dir, "poster_ratings_analysis.pdf"), "\n")
 
 # Bivariate observed means and posterior expectations on the 1-10 score scale
 mean_score_lines <- data.frame(mean_score = c(2, 4, 6, 8)) %>%
@@ -295,8 +301,8 @@ p_bivariate <- ggplot(plot_df) +
   )
 
 print(p_bivariate)
-ggsave("poster_ratings_bivariate.pdf", p_bivariate, width = 8, height = 8)
-cat("Plot saved to: poster_ratings_bivariate.pdf\n")
+ggsave(file.path(output_dir, "poster_ratings_bivariate.pdf"), p_bivariate, width = 8, height = 8)
+cat("Plot saved to:", file.path(output_dir, "poster_ratings_bivariate.pdf"), "\n")
 
 # -------------------------------------------------------------------------
 # 5. Summary Table

@@ -54,7 +54,7 @@ df <- bind_rows(eval_list)
 # -------------------------------------------------------------------------
 # 2. Compile and fit the Stan model
 # -------------------------------------------------------------------------
-mod <- cmdstan_model("rating_model.stan")
+mod <- cmdstan_model("rating_model/rating_model.stan")
 
 stan_data <- list(
   N = nrow(df),
@@ -66,8 +66,14 @@ stan_data <- list(
   presentation_score = ifelse(is.na(df$presentation_score), -1L, as.integer(df$presentation_score))
 )
 
+output_dir <- "outputs"
+if (!dir.exists(output_dir) && !dir.create(output_dir, recursive = TRUE)) {
+  stop("Could not create output directory: ", output_dir)
+}
+
 fit <- mod$sample(
   data = stan_data,
+  output_dir = output_dir,
   seed = 2026,
   chains = 4,
   parallel_chains = 4,
