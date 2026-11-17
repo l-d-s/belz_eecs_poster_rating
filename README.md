@@ -27,8 +27,8 @@ $$
 \begin{aligned}
 z_j &\sim \mathcal{N}_2(\mathbf{0}, I), \\
 b_j &= \mathrm{diag}(\tau_1,\tau_2)\,L_\Omega z_j, \\
-\Omega &= L_\Omega L_\Omega^\mathsf{T}, \\
 \tau_d &\sim \mathrm{HalfNormal}(0,1), \\
+\Omega &= L_\Omega L_\Omega^\mathsf{T}, \\
 \Omega &\sim \mathrm{LKJ}(2).
 \end{aligned}
 $$
@@ -45,9 +45,7 @@ $$
 \begin{aligned}
 \mu_{id} &= \mathrm{logit}^{-1}(\eta_{p[i] d}+b_{j[i] d}), \\
 \phi_d &\sim \mathrm{Gamma}(2,0.1), \\
-\alpha_{id} &= \mu_{id}\phi_d, \\
-\beta_{id} &= (1-\mu_{id})\phi_d, \\
-u_{id} &\sim \mathrm{Beta}(\alpha_{id},\beta_{id}).
+u_{id} &\sim \mathrm{Beta}(\text{mean} = \mu_{id}, \text{precision} = \phi_d).
 \end{aligned}
 $$
 
