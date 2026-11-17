@@ -62,17 +62,17 @@ model {
   phi ~ gamma(2.0, 0.1);
 
   // Likelihood
-  for (n in 1:N) {
-    int p = poster_id[n];
-    int j = judge_id[n];
+  for (i in 1:N) {
+    int p = poster_id[i];
+    int j = judge_id[i];
 
-    if (science_score[n] != -1) {
+    if (science_score[i] != -1) {
       real mu_sci = inv_logit(eta[p, 1] + b_judge[j, 1]);
-      science_score[n] ~ interval_beta(mu_sci, phi[1]);
+      science_score[i] ~ interval_beta(mu_sci, phi[1]);
     }
-    if (presentation_score[n] != -1) {
+    if (presentation_score[i] != -1) {
       real mu_pres = inv_logit(eta[p, 2] + b_judge[j, 2]);
-      presentation_score[n] ~ interval_beta(mu_pres, phi[2]);
+      presentation_score[i] ~ interval_beta(mu_pres, phi[2]);
     }
   }
 }
