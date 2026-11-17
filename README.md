@@ -109,7 +109,8 @@ retains all poster metadata.
 ## Running the analyses
 
 Run the scripts from the repository root in an R environment with CmdStanR,
-CmdStan, posterior, dplyr, tidyr, ggplot2 and cowplot installed. The Nix
+CmdStan, posterior, dplyr, tidyr, ggplot2, cowplot, scales and systemfonts
+installed. The Nix
 flake describes a development environment, but a read-only CmdStan
 installation may need a writable build setup when compilation is required.
 
@@ -120,6 +121,10 @@ installation may need a writable build setup when compilation is required.
 
 Both scripts write Stan sampling output to `outputs/`; the real-data script
 also writes its plots there. Generated files in `outputs/` are not tracked.
+The shared plot helpers are in [`plotting.R`](plotting.R). Plots use Arial
+and Cairo PDF output when available; if Arial or Cairo is unavailable, the
+scripts warn and use a portable sans-serif font (and standard PDFs if Cairo
+is unavailable).
 
 ## License
 

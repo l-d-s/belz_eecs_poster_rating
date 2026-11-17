@@ -5,6 +5,10 @@ library(tidyr)
 library(ggplot2)
 library(cowplot)
 
+source("plotting.R")
+plot_font <- plotting_font_family()
+if (!interactive()) options(device = plotting_pdf_device())
+
 set.seed(2026)
 
 # -------------------------------------------------------------------------
@@ -173,10 +177,9 @@ p_scores <- ggplot(plot_df, aes(y = poster_label)) +
     title = "A. Judge-Adjusted Posterior Score vs. Raw Mean",
     subtitle = "Thick & thin bars show 50% and 90% credible intervals (given average judge)"
   ) +
-  theme_classic(base_size = 11, base_family = "serif") +
+  theme_clean(plot_font) +
   theme(
-    plot.title = element_text(face = "bold", size = 11.5),
-    plot.subtitle = element_text(size = 9.5, color = "grey30"),
+    plot.subtitle = element_text(color = "grey30"),
     axis.line.y = element_line(color = "black", linewidth = 0.5),
     axis.line.x = element_line(color = "black", linewidth = 0.5),
     panel.grid.major.x = element_line(color = "grey92", linewidth = 0.4),
@@ -190,7 +193,7 @@ p_best <- ggplot(plot_df, aes(x = prob_best, y = poster_label)) +
   geom_col(width = 0.62, fill = "#2C5E4F", color = "black", linewidth = 0.3) +
   geom_text(
     aes(label = ifelse(prob_best >= 0.01, sprintf("%.1f%%", 100 * prob_best), "")),
-    hjust = -0.18, size = 3.1, family = "serif", color = "black"
+    hjust = -0.18, size = 3.1, family = plot_font, color = "black"
   ) +
   scale_x_continuous(
     labels = scales::percent_format(accuracy = 1),
@@ -203,10 +206,9 @@ p_best <- ggplot(plot_df, aes(x = prob_best, y = poster_label)) +
     title = "B. Posterior Probability of Rank #1",
     subtitle = "Share of posterior draws with highest average"
   ) +
-  theme_classic(base_size = 11, base_family = "serif") +
+  theme_clean(plot_font) +
   theme(
-    plot.title = element_text(face = "bold", size = 11.5),
-    plot.subtitle = element_text(size = 9.5, color = "grey30"),
+    plot.subtitle = element_text(color = "grey30"),
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
     axis.line.y = element_blank(),

@@ -51,6 +51,7 @@
         tidyverse
         cowplot
         ggplot2
+        systemfonts
         patchwork
         ggh4x
 

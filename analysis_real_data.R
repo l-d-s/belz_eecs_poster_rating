@@ -5,6 +5,10 @@ library(tidyr)
 library(ggplot2)
 library(cowplot)
 
+source("plotting.R")
+plot_font <- plotting_font_family()
+if (!interactive()) options(device = plotting_pdf_device())
+
 set.seed(2026)
 
 # -------------------------------------------------------------------------
@@ -200,14 +204,12 @@ p_scores <- ggplot(plot_df, aes(y = poster_label)) +
     title = "A. Observed and adjusted scores",
     subtitle = "Posterior draw percentiles (judge effect = 0):\n50% thick: 25th–75th; 90% thin: 5th–95th",
     x = "Average science and presentation score (1–10)",
-    y = "Poster    observed mean (n)"
+    y = "Poster\nobserved\nmean (n)"
   ) +
-  theme_cowplot(font_size = 11) +
+  theme_clean(plot_font) +
   theme(
     panel.grid.major.x = element_line(color = "grey92", linewidth = 0.4),
-    legend.position = "bottom",
-    plot.title = element_text(face = "bold"),
-    plot.subtitle = element_text(size = 9)
+    legend.position = "bottom"
   )
 
 # Panel B: Pr(Poster is Best)
@@ -225,13 +227,11 @@ p_best <- ggplot(plot_df, aes(x = prob_best, y = poster_label)) +
     x = "Pr(best poster)",
     y = NULL
   ) +
-  theme_cowplot(font_size = 11) +
+  theme_clean(plot_font) +
   theme(
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
-    panel.grid.major.x = element_line(color = "grey92", linewidth = 0.4),
-    plot.title = element_text(face = "bold"),
-    plot.subtitle = element_text(size = 9)
+    panel.grid.major.x = element_line(color = "grey92", linewidth = 0.4)
   )
 
 # Combine with cowplot
@@ -246,7 +246,8 @@ final_plot <- plot_grid(
 print(final_plot)
 
 # Save the plot
-ggsave(file.path(output_dir, "poster_ratings_analysis.pdf"), final_plot, width = 14, height = 6)
+ggsave(file.path(output_dir, "poster_ratings_analysis.pdf"), final_plot,
+       device = plotting_pdf_device(), width = 14, height = 6)
 cat("\nPlot saved to:", file.path(output_dir, "poster_ratings_analysis.pdf"), "\n")
 
 # Bivariate observed means and posterior expectations on the 1-10 score scale
@@ -278,13 +279,13 @@ p_bivariate <- ggplot(plot_df) +
     data = filter(plot_df, show_id),
     aes(x = raw_mean_science, y = raw_mean_presentation,
         label = sub("^P", "", poster_code)),
-    color = "white", fontface = "bold", size = 4.5, show.legend = FALSE
+    color = "white", family = plot_font, fontface = "bold", size = 4.5, show.legend = FALSE
   ) +
   geom_text(
     data = filter(plot_df, show_id),
     aes(x = raw_mean_science, y = raw_mean_presentation,
         label = sub("^P", "", poster_code), color = "Observed mean"),
-    fontface = "bold", size = 3.5
+    family = plot_font, fontface = "bold", size = 3.5
   ) +
   scale_color_manual(
     name = NULL,
@@ -301,15 +302,15 @@ p_bivariate <- ggplot(plot_df) +
     y = "Presentation score",
     caption = "Diagonal lines show (science + presentation) / 2.\nLabels show the top five by adjusted average score."
   ) +
-  theme_cowplot(font_size = 11) +
+  theme_clean(plot_font) +
   theme(
     panel.grid.major = element_line(color = "grey92", linewidth = 0.4),
-    legend.position = "bottom",
-    plot.title = element_text(face = "bold")
+    legend.position = "bottom"
   )
 
 print(p_bivariate)
-ggsave(file.path(output_dir, "poster_ratings_bivariate.pdf"), p_bivariate, width = 8, height = 8)
+ggsave(file.path(output_dir, "poster_ratings_bivariate.pdf"), p_bivariate,
+       device = plotting_pdf_device(), width = 8, height = 8)
 cat("Plot saved to:", file.path(output_dir, "poster_ratings_bivariate.pdf"), "\n")
 
 # -------------------------------------------------------------------------
