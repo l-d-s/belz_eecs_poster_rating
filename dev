@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Nix develop rewrites output paths into its working directory. Launch it
+# from a plain temporary path to handle spaces and apostrophes in repo paths.
+project_dir=$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+nix_bin=$(command -v nix || true)
+if [ -z "$nix_bin" ] && [ -x /nix/var/nix/profiles/default/bin/nix ]; then
+  nix_bin=/nix/var/nix/profiles/default/bin/nix
+fi
+if [ -z "$nix_bin" ]; then
+  echo "Install Nix first: https://nix.dev/install-nix" >&2
+  exit 127
+fi
+
+launch_dir=$(mktemp -d /tmp/belz-eecs-dev.XXXXXXXX)
+trap 'rmdir "$launch_dir" 2>/dev/null || true' EXIT
+export BELZ_EECS_PROJECT_ROOT="$project_dir"
+cd "$launch_dir"
+
+if [ "$#" -eq 0 ]; then
+  "$nix_bin" --extra-experimental-features 'nix-command flakes' develop "$project_dir"
+else
+  "$nix_bin" --extra-experimental-features 'nix-command flakes' develop "$project_dir" -c "$@"
+fi
