@@ -105,16 +105,68 @@ retains all poster metadata.
 
 ## Running the analyses
 
-Run the scripts from the repository root in an R environment with CmdStanR,
-CmdStan, posterior, dplyr, tidyr, ggplot2, cowplot, scales and systemfonts
-installed. The Nix
-flake describes a development environment, but a read-only CmdStan
-installation may need a writable build setup when compilation is required.
+The Nix flake supports Apple Silicon and Intel Macs, as well as ARM64 and
+x86-64 Linux. It supplies R, CmdStanR, CmdStan, the analysis packages, radian,
+and Quarto using the versions pinned in `flake.lock`.
+
+On macOS, first [install Nix](https://nix.dev/install-nix) if it is not already
+available. The official multi-user installer requires administrator access:
+
+```sh
+curl -L https://nixos.org/nix/install | sh -s -- --daemon
+```
+
+Open a new terminal after installation. From the repository root, enter the
+development environment and check it:
+
+```sh
+./dev
+Rscript check_environment.R
+```
+
+The `dev` launcher uses the flake and enables its required Nix features.
+It also handles repository paths containing spaces or apostrophes, such as
+`Tong's projects`, by starting Nix from a temporary directory and returning
+the development shell to the repository root.
+
+The first run downloads dependencies and prepares a writable CmdStan cache
+under `/tmp/belz-eecs-poster-rating-<user-id>/`. It is reused while
+that temporary directory exists and recreated when needed. The shell sets
+`CMDSTAN` automatically; there is no need to run `install_cmdstan()`. The
+environment check compiles the repository's model, runs a short sampling
+check, and verifies PDF plotting. It does not assess model convergence.
+The pinned CmdStanR package also includes a small CSV path-quoting fix for
+repository paths containing apostrophes.
+
+Then run an analysis inside that shell:
+
+```sh
+Rscript analysis.R
+# Requires the separate input CSV described below:
+Rscript analysis_real_data.R
+```
+
+To run a single command without entering an interactive shell:
+
+```sh
+./dev Rscript analysis.R
+# Or supply a real-data CSV:
+./dev Rscript analysis_real_data.R ecss-raw-scores-2026-11-18.csv
+```
+
+For paths without special characters, `nix develop` also works when flakes
+are enabled in your Nix configuration. Optional direnv integration is
+provided by `.envrc`; it requires direnv with nix-direnv and `direnv allow`.
+
+For a non-Nix environment, install CmdStanR, CmdStan, posterior, dplyr, tidyr,
+ggplot2, cowplot, scales and systemfonts, then run the scripts from the
+repository root.
 
 - [`analysis.R`](analysis.R) simulates ratings before fitting the model.
 - [`analysis_real_data.R`](analysis_real_data.R) reads
-  `input_data/ecss-raw-scores-2026-11-17.csv`. The ignored `input_data/`
-  directory must be supplied separately.
+  `input_data/ecss-raw-scores-2026-11-17.csv` by default, or the CSV path passed
+  as its first command-line argument. Input data must be supplied separately;
+  `input_data/` and root-level `ecss-raw-scores-*.csv` files are ignored by Git.
 
 Both scripts write Stan sampling output to `outputs/`; the real-data script
 also writes its plots there. Generated files in `outputs/` are not tracked.
