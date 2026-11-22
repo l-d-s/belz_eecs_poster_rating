@@ -14,9 +14,9 @@ set.seed(2026)
 # -------------------------------------------------------------------------
 # 1. Load real poster judging data
 # -------------------------------------------------------------------------
-raw_data <- read.csv("input_data/ecss-raw-scores-2026-11-17.csv", stringsAsFactors = FALSE)
+raw_data <- read.csv("input_data/ecss-raw-scores-2026-11-20.csv", stringsAsFactors = FALSE)
 
-cat("Data loaded from: input_data/ecss-raw-scores-2026-11-17.csv\n")
+cat("Data loaded from: input_data/ecss-raw-scores-2026-11-20.csv\n")
 cat("Total evaluations:", nrow(raw_data), "\n")
 cat("Unique posters:", n_distinct(raw_data$poster_id), "\n")
 cat("Unique judges:", n_distinct(raw_data$judge_id), "\n\n")
