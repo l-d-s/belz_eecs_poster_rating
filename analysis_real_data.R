@@ -14,9 +14,18 @@ set.seed(2026)
 # -------------------------------------------------------------------------
 # 1. Load real poster judging data
 # -------------------------------------------------------------------------
-raw_data <- read.csv("input_data/ecss-raw-scores-2026-11-20.csv", stringsAsFactors = FALSE)
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) > 1L) {
+  stop("Usage: Rscript analysis_real_data.R [input.csv]")
+}
+input_file <- if (length(args) == 1L) args[[1L]] else "input_data/ecss-raw-scores-2026-11-20.csv"
+if (!file.exists(input_file)) {
+  stop("Input CSV not found: ", input_file,
+       "\nPass its path: Rscript analysis_real_data.R path/to/input.csv")
+}
+raw_data <- read.csv(input_file, stringsAsFactors = FALSE)
 
-cat("Data loaded from: input_data/ecss-raw-scores-2026-11-20.csv\n")
+cat("Data loaded from:", input_file, "\n")
 cat("Total evaluations:", nrow(raw_data), "\n")
 cat("Unique posters:", n_distinct(raw_data$poster_id), "\n")
 cat("Unique judges:", n_distinct(raw_data$judge_id), "\n\n")
