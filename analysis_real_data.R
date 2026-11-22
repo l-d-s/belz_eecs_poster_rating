@@ -18,7 +18,7 @@ args <- commandArgs(trailingOnly = TRUE)
 if (length(args) > 1L) {
   stop("Usage: Rscript analysis_real_data.R [input.csv]")
 }
-input_file <- if (length(args) == 1L) args[[1L]] else "input_data/ecss-raw-scores-2026-11-17.csv"
+input_file <- if (length(args) == 1L) args[[1L]] else "input_data/ecss-raw-scores-2026-11-20.csv"
 if (!file.exists(input_file)) {
   stop("Input CSV not found: ", input_file,
        "\nPass its path: Rscript analysis_real_data.R path/to/input.csv")
